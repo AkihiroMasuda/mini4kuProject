@@ -49,7 +49,6 @@ public class MainActivity extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        setContentView(R.layout.activity_main);
         surfView = new MainSurfaceView(this);
         setContentView(surfView);
  
@@ -58,7 +57,6 @@ public class MainActivity extends Activity {
         Handler handler = new Handler();
         thread = createMyThread(handler);
         thread.start();
-//        uiTimer = new Timer();
         uiTimer = createUITimer(handler);
         isThreadStop = false;
     }
@@ -144,19 +142,7 @@ public class MainActivity extends Activity {
         return false;
     }
     
-    
-    public String str = "";
-    public String str_txtview = "";
-    
     private Thread createMyThread(final Handler handler){
-    	
-//		final TextView tv = (TextView)findViewById(R.id.txtMain);
-//		final Runnable updateUI = new Runnable(){
-//			@Override
-//			public void run() {
-//				tv.setText(str_txtview);
-//			}
-//		};
     	
     	return new Thread(new Runnable() {
             @Override
@@ -166,9 +152,9 @@ public class MainActivity extends Activity {
 					InputStream inStream = btSocket.getInputStream();
 //					int size=inStream.read();
 					int maxsize = 1024;
-					final byte[] buffer = new byte[maxsize];
 //					Log.e(LOG_TAG, "while1...");
                 	while(!isThreadStop){
+    					final byte[] buffer = new byte[maxsize];
     					int size=0;
     					while(!isThreadStop){
 //    						int rsize = inStream.read(buffer, size, maxsize-size);
@@ -183,22 +169,13 @@ public class MainActivity extends Activity {
     						if (buffer[size-1]==CODE_LF){
     							//改行が出てきたら、出力
     							DataInputStream in = new DataInputStream(new ByteArrayInputStream(buffer));
-    							str = new String(buffer);
-    							String ss = str.substring(0, size);
+    							String s1 = new String(buffer);
+    							String ss = s1.substring(0, size);
     							
+    							// 一行文の文字列をサーフェイスに反映
     							surfView.addText(ss);
-    							
-//    							str_txtview = ss + str_txtview;
-////    							str_txtview = "1234567890\n" + str_txtview;
-//    							final int str_txtview_maxlen =  1024*20;
-//    							if (str_txtview.length() > str_txtview_maxlen){
-//    								//長いので程々にカット
-//    								str_txtview = str_txtview.substring(0, str_txtview_maxlen); 
-//    							}
-    							// UI描画命令
-//    							handler.removeCallbacks(updateUI);
-//    							handler.post(updateUI);
-//    							Thread.sleep(5);
+//    							Log.e(LOG_TAG, ss);
+
     							break;
     						}
     					}
@@ -208,33 +185,17 @@ public class MainActivity extends Activity {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-//                catch (InterruptedException e){
-//					e.printStackTrace();
-//				}
             }
         });
     }
     
     // UI描画用タイマー生成
-    private int cnt = 0;
     private Timer createUITimer(final Handler handler){
-//		final TextView tv = (TextView)findViewById(R.id.txtMain);
 		final Runnable updateUI = new Runnable(){
 			@Override
 			public void run() {
-				++cnt;
-				str_txtview = String.valueOf(cnt) + "\n" + str_txtview;
-				final int str_txtview_maxlen =  1024;
-				if (str_txtview.length() > str_txtview_maxlen){
-					//長いので程々にカット
-					str_txtview = str_txtview.substring(0, str_txtview_maxlen); 
-				}
-//				tv.setText(str_txtview);
-				
+				// サーフェイスに描画命令
 				surfView.updateSurface();
-				
-//				String hoge = String.valueOf(cnt);
-//				tv.setText(hoge);
 			}
 		};
     	Timer timer = new Timer();

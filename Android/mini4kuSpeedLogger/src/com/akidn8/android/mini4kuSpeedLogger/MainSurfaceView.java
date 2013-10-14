@@ -44,41 +44,36 @@ public class MainSurfaceView extends SurfaceView implements SurfaceHolder.Callba
 		
 	}	
 	
+	// 画面に描画する１秒分の文字列を追加
 	public void addText(String txt){
-		str_txtview = txt + "\n" + str_txtview;
-		final int str_txtview_maxlen =  1024;
-		if (str_txtview.length() > str_txtview_maxlen){
-			//長いので程々にカット
-			str_txtview = str_txtview.substring(0, str_txtview_maxlen); 
+		synchronized(this){
+			str_txtview = txt + str_txtview;
+			final int str_txtview_maxlen =  1024;
+			if (str_txtview.length() > str_txtview_maxlen){
+				//長いので程々にカット
+				str_txtview = str_txtview.substring(0, str_txtview_maxlen); 
+			}
 		}
 	}
 	
     private int cnt = 0;
 	public void updateSurface(){
 		++cnt;
-//		str_txtview = String.valueOf(cnt) + "\n" + str_txtview;
-//		final int str_txtview_maxlen =  1024;
-//		if (str_txtview.length() > str_txtview_maxlen){
-//			//長いので程々にカット
-//			str_txtview = str_txtview.substring(0, str_txtview_maxlen); 
-//		}
-		String[] str_s = str_txtview.split("\n");
-		
-//		tv.setText(str_txtview);
+		String[] str_a;
+		synchronized (this) {
+			str_a = str_txtview.split("\n");
+		}
 		
 		Canvas canvas = getHolder().lockCanvas();
         if (canvas != null){
             canvas.drawColor(Color.WHITE);
-//            canvas.drawText("count = " + count, 0, paint.getTextSize(), paint);
-//            canvas.drawText(str_txtview, 0, paint.getTextSize(), paint);
-            
             int lownum = 0;
             int padding = 4;
-    		for(String s : str_s){
-    			canvas.drawText(s, 0, paint.getTextSize() + (paint.getTextSize()+padding)*lownum, paint);
+    		for(String s : str_a){
+    			canvas.drawText(s, 0, 70 + (paint.getTextSize()+padding)*lownum, paint);
+//    			canvas.drawLine(0.f, 0.f, 200.f, 200.f, paint);
     			lownum++;
     		}
-            
             getHolder().unlockCanvasAndPost(canvas);
         }
    }
