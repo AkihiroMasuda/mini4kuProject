@@ -7,11 +7,15 @@ import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Iterator;
+import java.util.Random;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
 
+import org.achartengine.GraphicalView;
+
+import com.akidn8.android.mini4kuSpeedLogger.GraphicalViewWrapper;
 import com.akidn8.android.mini4kuSpeedLogger.R;
 
 import android.os.Bundle;
@@ -32,14 +36,17 @@ public class MainActivity extends Activity {
     //private UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     private final UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     
-    private BluetoothDevice btDevice;
-    private BluetoothSocket btSocket;
+    private BluetoothDevice btDevice = null;
+    private BluetoothSocket btSocket = null;
  
-    private Thread thread;
-    private Timer uiTimer; //UI描画用タイマー
+    private Thread thread = null;
+    private Timer uiTimer = null; //UI描画用タイマー
  
     boolean isThreadStop;
-    MainSurfaceView surfView;
+    MainSurfaceView surfView = null;
+    GraphicalViewWrapper graphViewWrapper;
+    
+    long stTime;
     
     @Override
     public void onResume(){
@@ -50,15 +57,25 @@ public class MainActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         surfView = new MainSurfaceView(this);
-        setContentView(surfView);
+        graphViewWrapper = new GraphicalViewWrapper(this);
+		GraphicalView graphView = graphViewWrapper.getView();
+//        setContentView(surfView);
+        setContentView(graphView);
  
-        initBT();
-        
         Handler handler = new Handler();
-        thread = createMyThread(handler);
+        if (false){
+        	// 本番
+            initBT();
+            thread = createMyThread(handler);
+        }else{
+        	//テスト
+            thread = createTestThread(handler);
+        }
+
         thread.start();
         uiTimer = createUITimer(handler);
         isThreadStop = false;
+        stTime = System.currentTimeMillis();
     }
 
  
@@ -142,6 +159,37 @@ public class MainActivity extends Activity {
         return false;
     }
     
+    private Thread createTestThread(final Handler handler){
+    	return new Thread(new Runnable(){
+            @Override
+            public void run() {
+            	Random rnd = new Random();
+            	while(!isThreadStop){
+            		try {
+						Thread.sleep(50);
+						
+						long curSysTime = System.currentTimeMillis() - stTime;
+						long dt = 13000 + rnd.nextInt(4000);//μ秒
+						float vel = (float) ((0.03f*3.14159)/((float)(dt)/1000.f/1000.f)*3.6f);//km/h, 直径3cmと仮定
+						String ss = String.format("%d,%d,%d\n", curSysTime, dt, (int)(vel));
+						// 一行文の文字列をサーフェイスに反映
+//						surfView.addText(ss);
+						
+						double x = curSysTime/1000.;
+						graphViewWrapper.add(0, x, vel);
+						graphViewWrapper.setTitle(String.format("%5.2f [km/h]", vel));
+						graphViewWrapper.setXAxis(x - 30, x);
+						graphViewWrapper.repaint();
+						
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+            	}
+            }
+    	});
+    }
+    
     private Thread createMyThread(final Handler handler){
     	
     	return new Thread(new Runnable() {
@@ -216,7 +264,9 @@ public class MainActivity extends Activity {
         isThreadStop = true;
 //        thread.stop();
         try {
-            btSocket.close();
+        	if (btSocket != null){
+                btSocket.close();
+        	}
         } catch (IOException e) {
             e.printStackTrace();
         }
