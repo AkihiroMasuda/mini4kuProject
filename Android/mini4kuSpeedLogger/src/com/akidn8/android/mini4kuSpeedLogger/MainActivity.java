@@ -63,7 +63,7 @@ public class MainActivity extends Activity {
         setContentView(graphView);
  
         Handler handler = new Handler();
-        if (false){
+        if (true){
         	// 本番
             initBT();
             thread = createMyThread(handler);
@@ -158,6 +158,19 @@ public class MainActivity extends Activity {
 		}
         return false;
     }
+
+    // BluetoothSPP通信で取得した１行分のデータを解釈し、グラフに値をわたして再描画処理を行う
+    private void parseReadDataAndDraw(String readdata){
+		String[] s_values = readdata.split(","); //受信文字列を分割
+		double x = Double.valueOf(s_values[0]) / 1000.; //システム時刻
+		double dt2 = Double.valueOf(s_values[1]);  //測定されたタイヤの回転間隔
+		double y = (float) ((0.03f*3.14159)/((float)(dt2)/1000.f/1000.f)*3.6f);//タイヤの回転時間から速度を求める
+		// 値をセットして再描画
+		graphViewWrapper.add(0, x, y);
+		graphViewWrapper.setTitle(String.format("%5.2f [km/h]", y));
+		graphViewWrapper.setXAxis(x - 30, x);
+		graphViewWrapper.repaint();
+    }
     
     private Thread createTestThread(final Handler handler){
     	return new Thread(new Runnable(){
@@ -168,18 +181,16 @@ public class MainActivity extends Activity {
             		try {
 						Thread.sleep(50);
 						
+						// 仮想の読み込みデータを作成
 						long curSysTime = System.currentTimeMillis() - stTime;
 						long dt = 13000 + rnd.nextInt(4000);//μ秒
 						float vel = (float) ((0.03f*3.14159)/((float)(dt)/1000.f/1000.f)*3.6f);//km/h, 直径3cmと仮定
 						String ss = String.format("%d,%d,%d\n", curSysTime, dt, (int)(vel));
+
+						// 再描画
+						parseReadDataAndDraw(ss);
 						// 一行文の文字列をサーフェイスに反映
 //						surfView.addText(ss);
-						
-						double x = curSysTime/1000.;
-						graphViewWrapper.add(0, x, vel);
-						graphViewWrapper.setTitle(String.format("%5.2f [km/h]", vel));
-						graphViewWrapper.setXAxis(x - 30, x);
-						graphViewWrapper.repaint();
 						
 					} catch (InterruptedException e) {
 						// TODO Auto-generated catch block
@@ -220,8 +231,11 @@ public class MainActivity extends Activity {
     							String s1 = new String(buffer);
     							String ss = s1.substring(0, size);
     							
+    							// 再描画
+    							parseReadDataAndDraw(ss);
+    							
     							// 一行文の文字列をサーフェイスに反映
-    							surfView.addText(ss);
+//    							surfView.addText(ss);
 //    							Log.e(LOG_TAG, ss);
 
     							break;
