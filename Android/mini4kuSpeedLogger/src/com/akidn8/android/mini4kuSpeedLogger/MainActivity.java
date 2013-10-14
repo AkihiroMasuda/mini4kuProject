@@ -30,7 +30,7 @@ public class MainActivity extends Activity {
  
     /* SPPで繋げる時のUUIDは決まっている模様 */
     //private UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
-    private UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+    private final UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     
     private BluetoothDevice btDevice;
     private BluetoothSocket btSocket;
@@ -38,7 +38,7 @@ public class MainActivity extends Activity {
     private Thread thread;
     private Timer uiTimer; //UI描画用タイマー
  
-    boolean isThreadStop = false;
+    boolean isThreadStop;
     
     @Override
     public void onResume(){
@@ -54,9 +54,10 @@ public class MainActivity extends Activity {
         
         Handler handler = new Handler();
         thread = createMyThread(handler);
-        thread.start();
+//        thread.start();
 //        uiTimer = new Timer();
         uiTimer = createUITimer(handler);
+        isThreadStop = false;
     }
 
  
@@ -158,15 +159,15 @@ public class MainActivity extends Activity {
             @Override
             public void run() {
                 try {
-                	while(true){
-    					Log.e(LOG_TAG, "while1...top");
-    					InputStream inStream = btSocket.getInputStream();
-//    					int size=inStream.read();
+//					Log.e(LOG_TAG, "while1...top");
+					InputStream inStream = btSocket.getInputStream();
+//					int size=inStream.read();
+					int maxsize = 1024;
+					final byte[] buffer = new byte[maxsize];
+//					Log.e(LOG_TAG, "while1...");
+                	while(!isThreadStop){
     					int size=0;
-    					int maxsize = 1024;
-    					final byte[] buffer = new byte[maxsize];
-    					Log.e(LOG_TAG, "while1...");
-    					while(true){
+    					while(!isThreadStop){
 //    						int rsize = inStream.read(buffer, size, maxsize-size);
     						if (size+1 > maxsize){
     							//これ以上は読めない
@@ -209,12 +210,23 @@ public class MainActivity extends Activity {
     }
     
     // UI描画用タイマー生成
+    private int cnt = 0;
     private Timer createUITimer(final Handler handler){
 		final TextView tv = (TextView)findViewById(R.id.txtMain);
 		final Runnable updateUI = new Runnable(){
 			@Override
 			public void run() {
+				++cnt;
+				str_txtview = String.valueOf(cnt) + "\n" + str_txtview;
+				final int str_txtview_maxlen =  1024;
+				if (str_txtview.length() > str_txtview_maxlen){
+					//長いので程々にカット
+					str_txtview = str_txtview.substring(0, str_txtview_maxlen); 
+				}
 				tv.setText(str_txtview);
+				
+//				String hoge = String.valueOf(cnt);
+//				tv.setText(hoge);
 			}
 		};
     	Timer timer = new Timer();
@@ -233,7 +245,7 @@ public class MainActivity extends Activity {
     protected void onPause() {
         super.onPause();
         isThreadStop = true;
-        thread.stop();
+//        thread.stop();
         try {
             btSocket.close();
         } catch (IOException e) {
