@@ -57,7 +57,7 @@ public class MainActivity extends Activity {
         
         Handler handler = new Handler();
         thread = createMyThread(handler);
-//        thread.start();
+        thread.start();
 //        uiTimer = new Timer();
         uiTimer = createUITimer(handler);
         isThreadStop = false;
@@ -185,13 +185,16 @@ public class MainActivity extends Activity {
     							DataInputStream in = new DataInputStream(new ByteArrayInputStream(buffer));
     							str = new String(buffer);
     							String ss = str.substring(0, size);
-    							str_txtview = ss + str_txtview;
-//    							str_txtview = "1234567890\n" + str_txtview;
-    							final int str_txtview_maxlen =  1024*20;
-    							if (str_txtview.length() > str_txtview_maxlen){
-    								//長いので程々にカット
-    								str_txtview = str_txtview.substring(0, str_txtview_maxlen); 
-    							}
+    							
+    							surfView.addText(ss);
+    							
+//    							str_txtview = ss + str_txtview;
+////    							str_txtview = "1234567890\n" + str_txtview;
+//    							final int str_txtview_maxlen =  1024*20;
+//    							if (str_txtview.length() > str_txtview_maxlen){
+//    								//長いので程々にカット
+//    								str_txtview = str_txtview.substring(0, str_txtview_maxlen); 
+//    							}
     							// UI描画命令
 //    							handler.removeCallbacks(updateUI);
 //    							handler.post(updateUI);

@@ -10,6 +10,7 @@ import android.view.SurfaceView;
 public class MainSurfaceView extends SurfaceView implements SurfaceHolder.Callback{
 
 	Paint paint;
+    private String str_txtview;
 	
 	public MainSurfaceView(Context context) {
 		super(context);
@@ -20,6 +21,7 @@ public class MainSurfaceView extends SurfaceView implements SurfaceHolder.Callba
         paint.setColor(Color.BLUE);
         paint.setAntiAlias(true);
         paint.setTextSize(24);
+        str_txtview = new String();
      }
 	
 	 @Override
@@ -42,20 +44,25 @@ public class MainSurfaceView extends SurfaceView implements SurfaceHolder.Callba
 		
 	}	
 	
-    private int cnt = 0;
-    private String str_txtview;
-	public void updateSurface(){
-		++cnt;
-		str_txtview = String.valueOf(cnt) + "\n" + str_txtview;
+	public void addText(String txt){
+		str_txtview = txt + "\n" + str_txtview;
 		final int str_txtview_maxlen =  1024;
 		if (str_txtview.length() > str_txtview_maxlen){
 			//長いので程々にカット
 			str_txtview = str_txtview.substring(0, str_txtview_maxlen); 
 		}
+	}
+	
+    private int cnt = 0;
+	public void updateSurface(){
+		++cnt;
+//		str_txtview = String.valueOf(cnt) + "\n" + str_txtview;
+//		final int str_txtview_maxlen =  1024;
+//		if (str_txtview.length() > str_txtview_maxlen){
+//			//長いので程々にカット
+//			str_txtview = str_txtview.substring(0, str_txtview_maxlen); 
+//		}
 		String[] str_s = str_txtview.split("\n");
-		
-		
-		
 		
 //		tv.setText(str_txtview);
 		
