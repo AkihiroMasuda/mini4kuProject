@@ -39,6 +39,7 @@ public class MainActivity extends Activity {
     private Timer uiTimer; //UI描画用タイマー
  
     boolean isThreadStop;
+    MainSurfaceView surfView;
     
     @Override
     public void onResume(){
@@ -48,7 +49,9 @@ public class MainActivity extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+//        setContentView(R.layout.activity_main);
+        surfView = new MainSurfaceView(this);
+        setContentView(surfView);
  
         initBT();
         
@@ -212,7 +215,7 @@ public class MainActivity extends Activity {
     // UI描画用タイマー生成
     private int cnt = 0;
     private Timer createUITimer(final Handler handler){
-		final TextView tv = (TextView)findViewById(R.id.txtMain);
+//		final TextView tv = (TextView)findViewById(R.id.txtMain);
 		final Runnable updateUI = new Runnable(){
 			@Override
 			public void run() {
@@ -223,7 +226,9 @@ public class MainActivity extends Activity {
 					//長いので程々にカット
 					str_txtview = str_txtview.substring(0, str_txtview_maxlen); 
 				}
-				tv.setText(str_txtview);
+//				tv.setText(str_txtview);
+				
+				surfView.updateSurface();
 				
 //				String hoge = String.valueOf(cnt);
 //				tv.setText(hoge);
